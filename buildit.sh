@@ -468,7 +468,7 @@ function create_srcdirs() {
 	echo "******* Copying :: HACK1 gmp includes from ${GMP_SRCDIR} to ${GMP_BUILDDIR}"
 	[ -e "${GCC_BUILDDIR}/gmp" -a -f "${GMP_BUILDDIR}/gmp-impl.h" ] && copy "${GMP_BUILDDIR}/gmp-impl.h" "${GCC_BUILDDIR}/gmp/gmp-impl.h" || die "HACK1 no gmp-impl.h"
 	[ -e "${GCC_BUILDDIR}/gmp" -a -f "${GMP_BUILDDIR}/longlong.h" ] && copy "${GMP_BUILDDIR}/longlong.h" "${GCC_BUILDDIR}/gmp/longlong.h" || die "HACK1 no longlong.h"
-#	echo "******* Copied :: HACK1 gmp includes from ${GMP_SRCDIR} to ${GMP_BUILDDIR}"
+	echo "******* Copied :: HACK1 gmp includes from ${GMP_SRCDIR} to ${GMP_BUILDDIR}"
 # HACK1 end
 }
 
