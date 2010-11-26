@@ -730,9 +730,9 @@ function build_spu() {
 # build the PPU chain
 function build_ppu() {
 	"${ECHO}" "******* Building :: PPU binutils"
-#	[ "${BUILD_BINUTILS}" != "false" -a "${BUILD_BINUTILS}" != "FALSE" ] && build_binutils "${PPU_TARGET}" "${PPU_DIR}"
+	[ "${BUILD_BINUTILS}" != "false" -a "${BUILD_BINUTILS}" != "FALSE" ] && build_binutils "${PPU_TARGET}" "${PPU_DIR}"
 	"${ECHO}" "******* Building :: PPU GCC stage 1"
-#	[ "${BUILD_GCC1}" != "false" -a "${BUILD_GCC1}" != "FALSE" ] && build_gcc_stage1 "${PPU_TARGET}" "${PPU_DIR}" "--with-cpu=cell"
+	[ "${BUILD_GCC1}" != "false" -a "${BUILD_GCC1}" != "FALSE" ] && build_gcc_stage1 "${PPU_TARGET}" "${PPU_DIR}" "--with-cpu=cell"
 	"${ECHO}" "******* Building :: PPU newlib"
 	[ "${BUILD_NEWLIB}" != "false" -a "${BUILD_NEWLIB}" != "FALSE" ] && build_newlib "${PPU_TARGET}" ${PPU_DIR} "${PPU_NEWLIB_TARGET}"
 	"${ECHO}" "******* Building :: PPU CRT"
@@ -761,7 +761,7 @@ function prep_chain() {
 # build the PPU chain and clean the build directories
 function ppu_arg() {
 	"${ECHO}" "******** BUILD START :: PPU toolchain building and installing"
-#	prep_chain "ppu" "${PS3CHAIN}" && \
+	prep_chain "ppu" "${PS3CHAIN}" && \
 	build_ppu && \
 	clean_build
 	"${ECHO}" "******** BUILD COMPLETE :: PPU toolchain built and installed"
