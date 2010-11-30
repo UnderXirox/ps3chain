@@ -32,9 +32,9 @@
   export PATH=$PATH:$PS3DEV/ppu/bin
   export PATH=$PATH:$PS3DEV/spu/bin
 
- 4) Run the toolchain script:
+ 4) Run the buildit.sh script:
 
-  ./ps3toolchain.sh
+  ./buildit.sh all
 
  ==========================
   Where do I go from here?
