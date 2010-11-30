@@ -77,18 +77,18 @@ fi
 BUILDTYPE="${BUILDTYPE:-$1}"
 # store the present working directory
 BUILDIT_DIR="${PWD}"
-# patches source directory
-PATCHES_SRCDIR="${BUILDIT_DIR}/patches"
+# dependency check scripts
+DEPENDS_DIR="${BUILDIT_DIR}"
+# patches directory
+PATCHES_DIR="${BUILDIT_DIR}/patches"
 # makerules source directory
 MAKERULES_SRCDIR="${BUILDIT_DIR}/makerules"
 # tar directory
-TAR_DIR="${PS3CHAIN}/src"
+TAR_DIR="${BUILDIT_DIR}/src"
 # src directory
 SRC_DIR="${PS3CHAIN}/src"
 # build directory
 BUILD_DIR="${PS3CHAIN}/build"
-# patchces directory
-PATCHES_DIR="${PS3CHAIN}/patches"
 # PPU directory
 PPU_DIR="${PS3CHAIN}/ppu"
 # SPU directory
@@ -106,7 +106,7 @@ PPU_NEWLIB_TARGET="${PPU_TARGET}"
 # binutils settings
 #BINUTILS_VER="2.20"
 BINUTILS_VER="2.20.1"
-BINUTILS_TARBALL="${TAR_DIR}/binutils-${BINUTILS_VER}.tar.bz2"
+BINUTILS_TARBALL="binutils-${BINUTILS_VER}.tar.bz2"
 BINUTILS_URI="${GNU_URI}/binutils/${BINUTILS_TARBALL}"
 BINUTILS_SRCDIR="${SRC_DIR}/binutils-${BINUTILS_VER}"
 BINUTILS_PATCH="${PATCHES_DIR}/binutils-${BINUTILS_VER}-PPU.patch"
@@ -114,7 +114,7 @@ BINUTILS_BUILDDIR="${BUILD_DIR}/build_binutils"
 BINUTILS_OUT="${BUILDOUTPUT}"
 # gcc settings
 GCC_VER="4.5.1"
-GCC_TARBALL="${TAR_DIR}/gcc-${GCC_VER}.tar.bz2"
+GCC_TARBALL="gcc-${GCC_VER}.tar.bz2"
 GCC_URI="${GNU_URI}/gcc/gcc-${GCC_VER}/${GCC_TARBALL}"
 GCC_SRCDIR="${SRC_DIR}/gcc-${GCC_VER}"
 GCC_PATCH="${PATCHES_DIR}/gcc-${GCC_VER}-PPU.patch"
@@ -123,7 +123,7 @@ GCC_OUT="${BUILDOUTPUT}"
 # gdb settings
 #GDB_VER="7.1"
 GDB_VER="7.2"
-GDB_TARBALL="${TAR_DIR}/gdb-${GDB_VER}.tar.bz2"
+GDB_TARBALL="gdb-${GDB_VER}.tar.bz2"
 GDB_URI="${GNU_URI}/gdb/${GDB_TARBALL}"
 GDB_SRCDIR="${SRC_DIR}/gdb-${GDB_VER}"
 GDB_PATCH="${PATCHES_DIR}/gdb-${GDB_VER}-PPU.patch"
@@ -136,26 +136,26 @@ CRT_BUILDDIR="${BUILD_DIR}/build_crt"
 CRT_OUT="${BUILDOUTPUT}"
 # gmp settings
 GMP_VER="5.0.1"
-GMP_TARBALL="${TAR_DIR}/gmp-${GMP_VER}.tar.bz2"
+GMP_TARBALL="gmp-${GMP_VER}.tar.bz2"
 GMP_URI="${GNU_URI}/gmp/${GMP_TARBALL}"
 GMP_SRCDIR="${SRC_DIR}/gmp-${GMP_VER}"
 GMP_GCCSRCDIR="${GCC_SRCDIR}/gmp"
 # mpc settings
 MPC_VER="0.8.2"
-MPC_TARBALL="${TAR_DIR}/mpc-${MPC_VER}.tar.gz"
+MPC_TARBALL="mpc-${MPC_VER}.tar.gz"
 MPC_URI="${MPC_URI}/${MPC_TARBALL}"
 MPC_SRCDIR="${SRC_DIR}/mpc-${MPC_VER}"
 MPC_GCCSRCDIR="${GCC_SRCDIR}/mpc"
 # mpfr settings
 #MPFR_VER="2.4.2"
 MPFR_VER="3.0.0"
-MPFR_TARBALL="${TAR_DIR}/mpfr-${MPFR_VER}.tar.bz2"
+MPFR_TARBALL="mpfr-${MPFR_VER}.tar.bz2"
 MPFR_URI="${MPFR_URI}/mpfr-${MPFR_VER}/${MPFR_TARBALL}"
 MPFR_SRCDIR="${SRC_DIR}/mpfr-${MPFR_VER}"
 MPFR_GCCSRCDIR="${GCC_SRCDIR}/mpfr"
 # newlib settings
 NEWLIB_VER="1.18.0"
-NEWLIB_TARBALL="${TAR_DIR}/newlib-${NEWLIB_VER}.tar.gz"
+NEWLIB_TARBALL="newlib-${NEWLIB_VER}.tar.gz"
 NEWLIB_URI="${NEWLIB_URI}/${NEWLIB_TARBALL}"
 NEWLIB_SRCDIR="${SRC_DIR}/newlib-${NEWLIB_VER}"
 NEWLIB_PATCH="${PATCHES_DIR}/newlib-${NEWLIB_VER}-PPU.patch"
@@ -166,63 +166,35 @@ NEWLIB_OUT="${BUILDOUTPUT}"
 case `uname -s` in
 	*BSD*)
 		OS="BSD";
-		MAKEBIN="gmake"
-		PATCHBIN="patch"
-		ECHOBIN="echo"
-		SEDBIN="sed"
-		TARBIN="tar"
-		WGETBIN="wget"
-		
 		;;
 	*CYGWIN*)
 		OS="CYGWIN";
-		MAKEBIN="make"
-		PATCHBIN="patch"
-		ECHOBIN="echo"
-		SEDBIN="sed"
-		TARBIN="tar"
-		WGETBIN="wget"
-		
 		;;
 	*Darwin*)
 		OS="DARWIN";
-		MAKEBIN="gmake"
-		PATCHBIN="/usr/bin/patch"
-		ECHOBIN="/bin/echo"
-		SEDBIN="/usr/bin/sed"
-		TARBIN="/usr/bin/tar"
-		WGETBIN="wget"
-		
 		;;
 	*Linux*)
 		OS="LINUX";
-		MAKEBIN="make"
-		PATCHBIN="/usr/bin/patch"
-		ECHOBIN="echo"
-		SEDBIN="sed"
-		TARBIN="tar"
-		WGETBIN="wget"
-		
+		AUTOCONFBIN=`which autoconf 2>> "${BUILDOUTPUT}"`
+		AUTOMAKEBIN=`which automake 2>> "${BUILDOUTPUT}"`
+		BISONBIN=`which bison 2>> "${BUILDOUTPUT}" || which yacc 2>> "${BUILDOUTPUT}"`
+		ECHOBIN=`which echo 2>> "${BUILDOUTPUT}"`
+		FLEXBIN=`which flex 2>> "${BUILDOUTPUT}" || which lex 2>> "${BUILDOUTPUT}"`
+		GCCBIN=`which gcc 2>> "${BUILDOUTPUT}" || which cc 2>> "${BUILDOUTPUT}"`
+		MAKEBIN=`which make 2>> "${BUILDOUTPUT}" || which gmake 2>> "${BUILDOUTPUT}"`
+		MAKEINFOBIN=`which makeinfo 2>> "${BUILDOUTPUT}" || which gmakeinfo 2>> "${BUILDOUTPUT}"`
+		PATCHBIN=`which patch 2>> "${BUILDOUTPUT}" || which gpatch 2>> "${BUILDOUTPUT}"`
+		SEDBIN=`which sed 2>> "${BUILDOUTPUT}" || which gsed 2>> "${BUILDOUTPUT}"`
+		TARBIN=`which tar 2>> "${BUILDOUTPUT}" || which gtar 2>> "${BUILDOUTPUT}"`
+		WGETBIN=`which wget 2>> "${BUILDOUTPUT}"`
+		echo "OS=${OS}::AUTOCONFBIN=${AUTOCONFBIN}::AUTOMAKE=${AUTOMAKEBIN}::BISONBIN=${BISONBIN}::ECHOBIN=${ECHOBIN}::MAKEBIN=${MAKEBIN}::PATCHBIN=${PATCHBIN}::SEDBIN=${SEDBIN}::TARBIN=${TARBIN}::WGETBIN=${WGETBIN}"
 		;;
 	*MINGW*)
 		OS="MINGW";
-		MAKEBIN="make"
-		PATCHBIN="patch"
-		ECHOBIN="echo"
-		SEDBIN="sed"
-		TARBIN="tar"
-		WGETBIN="wget"
-		
 		;;
 	*)
 		OS="UNKNOWN";
-		MAKEBIN="make"
-		PATCHBIN="patch"
-		ECHOBIN="echo"
-		SEDBIN="sed"
-		TARBIN="tar"
-		WGETBIN="wget"
-		
+		echo "OS=${OS}::AUTOCONFBIN=${AUTOCONFBIN}::AUTOMAKE=${AUTOMAKEBIN}::BISONBIN=${BISONBIN}::ECHOBIN=${ECHOBIN}::MAKEBIN=${MAKEBIN}::PATCHBIN=${PATCHBIN}::SEDBIN=${SEDBIN}::TARBIN=${TARBIN}::WGETBIN=${WGETBIN}"
 esac
 
 # default make options
@@ -247,23 +219,18 @@ fi
 function EchoDebug() {
 	TEXT="${1}"
 	[ "${DEBUG}" = "true" -o "${DEBUG}" = "TRUE" ] && "${ECHOBIN}" "${TEXT}"
-}
-
-# echo to file wrapper
-function EchoFile() {
-	TEXT="${1}"
-	"${ECHOBIN}" "${TEXT}" >> "${BUILDOUTPUT}"
+	[ "${DEBUG}" = "true" -o "${DEBUG}" = "TRUE" ] && "${ECHOBIN}" "${TEXT}" 1>> "${BUILDOUTPUT}"
 }
 
 # echo to screen wrapper
 function EchoTTY() {
 	TEXT="${1}"
 	"${ECHOBIN}" "${TEXT}"
+	"${ECHOBIN}" "${TEXT}" 1>> "${BUILDOUTPUT}"
 }
 
 # failure function
 function die() {
-	EchoFile "ERROR :: ${FUNCNAME} :: ${@}"
 	EchoTTY "ERROR :: ${FUNCNAME} :: ${@}"
 	exit 1
 }
@@ -308,12 +275,12 @@ function Copy() {
 			EchoDebug "*** Did not copy ${SRC} --> ${DST}, already there ..."
 		elif [ ! -f "${DST}" -a -z "${FLAG}" ]; then
 			EchoDebug "*** Copying ${SRC} --> ${DST} ..."
-			cp -v "${SRC}" "${DST}" >> "${BUILDOUTPUT}" 2>&1
+			cp -v "${SRC}" "${DST}" 1>> "${BUILDOUTPUT}" 2>&1
 		elif [ ! -f "${DST}" -a -n "${FLAG}" ]; then
 			EchoDebug "*** Copying with flag: \"${FLAG}v\" ${SRC} --> ${DST} ..."
-			cp "${FLAG}v" "${SRC}" "${DST}" >> "${BUILDOUTPUT}" 2>&1
+			cp "${FLAG}v" "${SRC}" "${DST}" 1>> "${BUILDOUTPUT}" 2>&1
 		else
-			ls -la "${DST}" >> "${BUILDOUTPUT}" 2>&1
+			ls -la "${DST}" 1>> "${BUILDOUTPUT}" 2>&1
 			die "could not copy ${SRC} --> ${DST}"
 		fi
 	)
@@ -329,15 +296,15 @@ function Download() {
 			EchoDebug "*** Found ${TARBALL}, using that ..."
 			EchoDebug "*** Testing ${TARBALL} ... 1st attempt ..."
 			# try to test without specifying compression type
-			"${TARBIN}" tf "${TARBALL}" >> "${BUILDOUTPUT}" 2>&1 && DL="0"
+			"${TARBIN}" tf "${TARBALL}" 1>> "${BUILDOUTPUT}" 2>&1 && DL="0"
 			if [ "${DL}" -eq "1" ]; then
 				EchoDebug "*** 2nd attempt ..."
 				# Check bz2
-				"${TARBIN}" tjf "${TARBALL}" >> "${BUILDOUTPUT}" 2>&1 && DL="0"
+				"${TARBIN}" tjf "${TARBALL}" 1>> "${BUILDOUTPUT}" 2>&1 && DL="0"
 				if [ "${DL}" -eq "1" ]; then
 					EchoDebug "*** 3rd attempt ..."
 					# Check gz
-					"${TARBIN}" tzf "${TARBALL}" >> "${BUILDOUTPUT}" 2>&1 && DL="0"
+					"${TARBIN}" tzf "${TARBALL}" 1>> "${BUILDOUTPUT}" 2>&1 && DL="0"
 				fi
 				if [ "${DL}" -eq "1" ]; then
 					EchoDebug "*** testing failed, downloading ${TARURL} ..."
@@ -358,14 +325,14 @@ function Export() {
 	FLAG="${3}"
 	if [ -z "${!VARIABLE}" -a -n "${VALUE}" -a -z "${FLAG}" ]; then
 		EchoDebug "*** Creating environment variable ${VARIABLE}=${VALUE} ..."
-		export "${VARIABLE}=${VALUE}" >> "${BUILDOUTPUT}" 2>&1
+		export "${VARIABLE}=${VALUE}" 1>> "${BUILDOUTPUT}" 2>&1
 	elif [ -n "${!VARIABLE}" -a -n "${VALUE}" -a -z "${FLAG}" ]; then
 		EchoDebug "*** Reassigning environment variable ${VARIABLE}=${VALUE} was `declare -p ${VARIABLE}` ..."
-		export "${VARIABLE}=${VALUE}" >> "${BUILDOUTPUT}" 2>&1
+		export "${VARIABLE}=${VALUE}" 1>> "${BUILDOUTPUT}" 2>&1
 	elif [ -n "${!VARIABLE}" -a -n "${FLAG}" ]; then
 		EchoDebug "*** Removing environment variable ${VARIABLE}=${VALUE} was `declare -p ${VARIABLE}` ..."
-		export -n "${VARIABLE}" >> "${BUILDOUTPUT}" 2>&1
-		unset -v "${VARIABLE}" >> "${BUILDOUTPUT}" 2>&1
+		export -n "${VARIABLE}" 1>> "${BUILDOUTPUT}" 2>&1
+		unset -v "${VARIABLE}" 1>> "${BUILDOUTPUT}" 2>&1
 	else
 		die "could not export variable ${VARIABLE}=${VALUE} with FLAG=${FLAG} :: `declare -p ${VARIABLE}`"
 	fi
@@ -382,13 +349,13 @@ function Extract() {
 			EchoDebug "*** Did not extract ${SRC} --> ${TARDST}, already there ..."
 		elif [ ! -d "${TARDST}" -a -f "${SRC}" ]; then
 			EchoDebug "*** Extracting ${SRC} --> ${TARDST} ..."
-			"${TARBIN}" xvf "${SRC}" -C "${DST}" >> "${BUILDOUTPUT}" 2>&1 && EX="0"
+			"${TARBIN}" xvf "${SRC}" -C "${DST}" 1>> "${BUILDOUTPUT}" 2>&1 && EX="0"
 			if [ "${EX}" -eq "1" ]; then
 				EchoDebug " maybe bzip2 ..."
-				"${TARBIN}" xvfj "${SRC}" -C "${DST}" >> "${BUILDOUTPUT}" 2>&1 && EX="0"
+				"${TARBIN}" xvfj "${SRC}" -C "${DST}" 1>> "${BUILDOUTPUT}" 2>&1 && EX="0"
 				if [ "${EX}" -eq "1" ]; then
 					EchoDebug " maybe gzip ..."
-					"${TARBIN}" xvfz "${SRC}" -C "${DST}" >> "${BUILDOUTPUT}" 2>&1 && EX="0"
+					"${TARBIN}" xvfz "${SRC}" -C "${DST}" 1>> "${BUILDOUTPUT}" 2>&1 && EX="0"
 				fi
 			fi
 			if [ "${EX}" -eq "1" ]; then
@@ -396,7 +363,7 @@ function Extract() {
 			fi
 		else
 			EchoDebug "*** Did not extract ${SRC} --> ${TARDST} in ${DST}, you should probably look into why." 
-			ls -la "${SRC}" "${DST}" "${TARDST}" >> "${BUILDOUTPUT}" 2>&1
+			ls -la "${SRC}" "${DST}" "${TARDST}" 1>> "${BUILDOUTPUT}" 2>&1
 		fi
 	)
 }
@@ -409,9 +376,9 @@ function Makedir() {
 			EchoDebug "*** Did not create directory ${DST}, already there ..."
 		elif [ ! -d "${DST}" -a ! -f "${DST}" ]; then
 			EchoDebug "*** Making directory ${DST} ..."
-			mkdir -pv "${DST}" >> "${BUILDOUTPUT}" 2>&1
+			mkdir -pv "${DST}" 1>> "${BUILDOUTPUT}" 2>&1
 		else
-			ls -la "${DST}" >> "${BUILDOUTPUT}" 2>&1
+			ls -la "${DST}" 1>> "${BUILDOUTPUT}" 2>&1
 			die "could not make directory ${DST}"
 		fi
 	)
@@ -425,7 +392,7 @@ function Patch() {
 		if [ -f "${PATCH_FILE}" -a -d "${SRC}" ]; then
 			EchoDebug "*** Patching ${SRC} with ${PATCH_FILE} ..." 
 			cd "${SRC}"
-			cat "${PATCH_FILE}" | "${PATCHBIN}" -p1 >> "${BUILDOUTPUT}" 2>&1 || die "could not patch ${SRC} with ${PATCH_FILE}"
+			cat "${PATCH_FILE}" | "${PATCHBIN}" -p1 1>> "${BUILDOUTPUT}" 2>&1 || die "could not patch ${SRC} with ${PATCH_FILE}"
 		else
 			EchoDebug "*** Did not patch ${SRC} with ${PATCH_FILE}, you should probably look into why." 
 		fi
@@ -441,7 +408,7 @@ function Relocate() {
 			EchoDebug "*** Did not Relocate ${SRC} --> ${DST}, already there ..."
 		else
 			EchoDebug "*** Relocating ${SRC} --> ${DST} ..."
-			mv -v "${SRC}" "${DST}" >> "${BUILDOUTPUT}" 2>&1 || die "while relocating ${SRC} --> ${DST}"
+			mv -v "${SRC}" "${DST}" 1>> "${BUILDOUTPUT}" 2>&1 || die "while relocating ${SRC} --> ${DST}"
 		fi
 	)
 }
@@ -457,10 +424,10 @@ function Remove() {
 		else
 			if [ -z "${FLAG}" ]; then
 				EchoDebug "*** Removing ${SRC} ..."
-				rm -v "${SRC}" >> "${BUILDOUTPUT}" 2>&1 || die "while removing ${SRC}"
+				rm -v "${SRC}" 1>> "${BUILDOUTPUT}" 2>&1 || die "while removing ${SRC}"
 			elif [ -n "${FLAG}" ]; then
 				EchoDebug "*** Removing ${SRC} with FLAG=${FLAG}v..."
-				rm "${FLAG}v" "${SRC}" >> "${BUILDOUTPUT}" 2>&1 || die "while removing ${SRC} with FLAG=${FLAG}"
+				rm "${FLAG}v" "${SRC}" 1>> "${BUILDOUTPUT}" 2>&1 || die "while removing ${SRC} with FLAG=${FLAG}"
 			fi
 		fi
 	)
@@ -479,28 +446,72 @@ function Symlink() {
 			EchoDebug "*** ${DST} is already a directory ..."
 		else
 			EchoDebug "*** Creating symbolic link ${SRC} --> ${DST}"
-			ln -sv "${SRC}" "${DST}" >> "${BUILDOUTPUT}" 2>&1
+			ln -sv "${SRC}" "${DST}" 1>> "${BUILDOUTPUT}" 2>&1
 		fi
 	)
 }
 
-# copy the make rules
-function copy_makerules() {
-	TARGET="${1}"
-	MKDST="${2}"
-	EchoTTY "******* Copying :: make rules to ${MKDST}"
-	[ ! -d "${MKDST}/${TARGET}" ] && Makedir "${MKDST}/${TARGET}"
-	[ -e "${MAKERULES_SRCDIR}/common.mk" -a ! -e "${MKDST}/common.mk" ] && Copy "${MAKERULES_SRCDIR}/common.mk" "${MKDST}/common.mk"
-	[ -e "${MAKERULES_SRCDIR}/common_pre.mk" -a ! -e "${MKDST}/common_pre.mk" ] && Copy "${MAKERULES_SRCDIR}/common_pre.mk" "${MKDST}/common_pre.mk"
-	[ -e "${MAKERULES_SRCDIR}/${TARGET}.mk" -a ! -e "${MKDST}/${TARGET}/${TARGET}.mk" ] && Copy "${MAKERULES_SRCDIR}/${TARGET}.mk" "${MKDST}/${TARGET}/${TARGET}.mk"
-	EchoTTY "******* Copied :: make rules to ${MKDST}"
+# check dependencies
+function check_depends() {
+	(
+		# check if we already verified dependencies
+		if [ -z "${VERIFIED}" ]; then
+			# check write access
+			EchoTTY "*** Checking write access ..."
+			[ -e "${PS3CHAIN}" -a -d "${PS3CHAIN}" ] && touch "${PS3CHAIN}/.write_permission_check" || die "need write permission to ${PS3CHAIN} to build"
+			[ -e "${PS3CHAIN}/.write_permission_check" -a -f "${PS3CHAIN}/.write_permission_check" ] && Remove "${PS3CHAIN}/.write_permission_check" || die "need write permission to ${PS3CHAIN}/.write_permission_check to build"
+
+			# check autoconf
+			EchoTTY "*** Checking for autoconf ..."
+			[ -e "${AUTOCONFBIN}" ] && "${AUTOCONFBIN}" --version 1>> "${BUILDOUTPUT}" 2>&1 || die "autoconf needed to build"
+
+			# check automake
+			EchoTTY "*** Checking for automake ..."
+			[ -e "${AUTOMAKEBIN}" ] && "${AUTOMAKEBIN}" --version 1>> "${BUILDOUTPUT}" 2>&1 || die "automake needed to build"
+
+			# check bison
+			EchoTTY "*** Checking for bison ..."
+			[ -e "${BISONBIN}" ] && "${BISONBIN}" -V 1>> "${BUILDOUTPUT}" 2>&1 || die "bison needed to build"
+
+			# check flex
+			EchoTTY "*** Checking for flex ..."
+			[ -e "${FLEXBIN}" ] && "${FLEXBIN}" --version 1>> "${BUILDOUTPUT}" 2>&1 || die "flex needed to build"
+
+			# check gcc
+			EchoTTY "*** Checking for gcc ..."
+			[ -e "${GCCBIN}" ] && "${GCCBIN}" --version 1>> "${BUILDOUTPUT}" 2>&1 || die "gcc needed to build"
+
+			# check makeinfo
+			EchoTTY "*** Checking for makeinfo ..."
+			[ -e "${MAKEINFOBIN}" ] && "${MAKEINFOBIN}" --version 1>> "${BUILDOUTPUT}" 2>&1 || die "makeinfo needed to build"
+
+			# check make
+			EchoTTY "*** Checking for make ..."
+			[ -e "${MAKEBIN}" ] && "${MAKEBIN}" -v 1>> "${BUILDOUTPUT}" 2>&1 || die "make needed to build"
+
+			# check patch
+			EchoTTY "*** Checking for patch ..."
+			[ -e "${PATCHBIN}" ] && "${PATCHBIN}" -v 1>> "${BUILDOUTPUT}" 2>&1 || die "patch needed to build"
+
+			# check wget
+			EchoTTY "*** Checking for wget ..."
+			[ -e "${WGETBIN}" ] && "${WGETBIN}" -V 1>> "${BUILDOUTPUT}" 2>&1 || die "wget needed to build"
+		else
+			EchoTTY "*** Dependencies already verified ..."
+		fi
+	)
 }
 
-# Copy patches to PS3CHAIN build directory if they exist
-function copy_patches() {
-	EchoTTY "******* Copying :: patches from ${PATCHES_SRCDIR}"
-	[ -e "${PATCHES_SRCDIR}" -a -d "${PATCHES_SRCDIR}" ] && Copy "${PATCHES_SRCDIR}" "${PATCHES_DIR}" "-R" || EchoDebug "*** No patches to apply ..."
-	EchoTTY "******* Copied :: patches from ${PATCHES_SRCDIR}"
+# clean build directories
+function clean_build() {
+	EchoTTY "******* Cleaning :: build directories in ${BUILD_DIR}"
+	[ -e "${BINUTILS_BUILDDIR}" ] && Remove "${BINUTILS_BUILDDIR}" "-rf"
+	[ -e "${GCC_BUILDDIR}" ] && Remove "${GCC_BUILDDIR}" "-rf"
+	[ -e "${NEWLIB_BUILDDIR}" ] && Remove "${NEWLIB_BUILDDIR}" "-rf"
+	[ -e "${CRT_BUILDDIR}" ] && Remove "${CRT_BUILDDIR}" "-rf"
+	[ -e "${GDB_BUILDDIR}" ] && Remove "${GDB_BUILDDIR}" "-rf"
+	[ -e "${BUILD_DIR}" ] && Remove "${BUILD_DIR}" "-rf"
+	EchoTTY "******* Cleaned :: build directories in ${BUILD_DIR}"
 }
 
 # clean source directories
@@ -516,33 +527,36 @@ function clean_src() {
 	[ -e "${GDB_SRCDIR}" ] && Remove "${GDB_SRCDIR}" "-rf"
 	[ -e "${PS3CHAIN}/common.mk" ] && Remove "${PS3CHAIN}/common.mk" "-rf"
 	[ -e "${PS3CHAIN}/common_pre.mk" ] && Remove "${PS3CHAIN}/common_pre.mk" "-rf"
+	[ -e "${SRC_DIR}" ] && Remove "${SRC_DIR}" "-rf"
 	EchoTTY "******* Cleaned :: src directories in ${SRC_DIR}"
 }
 
-# clean built directories
-function clean_build() {
-	EchoTTY "******* Cleaning :: build directories in ${BUILD_DIR}"
-	[ -e "${BINUTILS_BUILDDIR}" ] && Remove "${BINUTILS_BUILDDIR}" "-rf"
-	[ -e "${GCC_BUILDDIR}" ] && Remove "${GCC_BUILDDIR}" "-rf"
-	[ -e "${NEWLIB_BUILDDIR}" ] && Remove "${NEWLIB_BUILDDIR}" "-rf"
-	[ -e "${CRT_BUILDDIR}" ] && Remove "${CRT_BUILDDIR}" "-rf"
-	[ -e "${GDB_BUILDDIR}" ] && Remove "${GDB_BUILDDIR}" "-rf"
-	[ -e "${BUILD_DIR}" ] && Remove "${BUILD_DIR}" "-rf"
-	EchoTTY "******* Cleaned :: build directories in ${BUILD_DIR}"
-}
-
-# clean all
+# clean toolchain directories
 function clean_toolchains() {
 	EchoTTY "******* Cleaning :: toolchains ${PPU_DIR} and ${SPU_DIR}"
 	[ -e "${PPU_DIR}" ] && Remove "${PPU_DIR}" "-rf"
 	[ -e "${SPU_DIR}" ] && Remove "${SPU_DIR}" "-rf"
-	[ -e "${PATCHES_DIR}" ] && Remove "${PATCHES_DIR}" "-rf"
 	EchoTTY "******* Cleaned :: toolchains ${PPU_DIR} and ${SPU_DIR}"
 }
 
-# create the build directories
+# copy make rules
+function copy_makerules() {
+	(
+		TARGET="${1}"
+		MKDST="${2}"
+		EchoTTY "******* Copying :: make rules to ${MKDST}"
+		[ ! -d "${MKDST}/${TARGET}" ] && Makedir "${MKDST}/${TARGET}"
+		[ -e "${MAKERULES_SRCDIR}/common.mk" -a ! -e "${MKDST}/common.mk" ] && Copy "${MAKERULES_SRCDIR}/common.mk" "${MKDST}/common.mk"
+		[ -e "${MAKERULES_SRCDIR}/common_pre.mk" -a ! -e "${MKDST}/common_pre.mk" ] && Copy "${MAKERULES_SRCDIR}/common_pre.mk" "${MKDST}/common_pre.mk"
+		[ -e "${MAKERULES_SRCDIR}/${TARGET}.mk" -a ! -e "${MKDST}/${TARGET}/${TARGET}.mk" ] && Copy "${MAKERULES_SRCDIR}/${TARGET}.mk" "${MKDST}/${TARGET}/${TARGET}.mk"
+		EchoTTY "******* Copied :: make rules to ${MKDST}"
+	)
+}
+
+# create build directories
 function create_builddirs() {
 	EchoTTY "******* Creating :: build directories in ${BUILD_DIR}"
+	[ ! -d "${BUILD_DIR}" ] && Makedir "${BUILD_DIR}"
 	[ ! -d "${BINUTILS_BUILDDIR}" ] && Makedir "${BINUTILS_BUILDDIR}" || die "could not make binutils build directory ${BINUTILS_BUILDDIR}"
 	[ ! -d "${GCC_BUILDDIR}" ] && Makedir "${GCC_BUILDDIR}" || die "could not make gcc build directory ${GCC_BUILDDIR}"
 	[ ! -d "${CRT_BUILDDIR}" ] && Makedir "${CRT_BUILDDIR}" || die "could not make crt build directory ${CRT_BUILDDIR}"
@@ -551,16 +565,17 @@ function create_builddirs() {
 	EchoTTY "******* Created :: build directories in ${BUILD_DIR}"
 }
 
-# setup src directories
+# create src directories
 function create_srcdirs() {
 	EchoTTY "******* Extracting :: tarballs to ${SRC_DIR}"
-	[ -f "${BINUTILS_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${BINUTILS_TARBALL}" "${SRC_DIR}"
-	[ -f "${GCC_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${GCC_TARBALL}" "${SRC_DIR}"
-	[ -f "${NEWLIB_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${NEWLIB_TARBALL}" "${SRC_DIR}"
-	[ -f "${GMP_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${GMP_TARBALL}" "${SRC_DIR}"
-	[ -f "${MPFR_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${MPFR_TARBALL}" "${SRC_DIR}"
-	[ -f "${MPC_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${MPC_TARBALL}" "${SRC_DIR}"
-	[ -f "${GDB_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${GDB_TARBALL}" "${SRC_DIR}"
+	[ ! -d "${SRC_DIR}" ] && Makedir "${SRC_DIR}"
+	[ -f "${TAR_DIR}/${BINUTILS_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${TAR_DIR}/${BINUTILS_TARBALL}" "${SRC_DIR}"
+	[ -f "${TAR_DIR}/${GCC_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${TAR_DIR}/${GCC_TARBALL}" "${SRC_DIR}"
+	[ -f "${TAR_DIR}/${NEWLIB_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${TAR_DIR}/${NEWLIB_TARBALL}" "${SRC_DIR}"
+	[ -f "${TAR_DIR}/${GMP_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${TAR_DIR}/${GMP_TARBALL}" "${SRC_DIR}"
+	[ -f "${TAR_DIR}/${MPFR_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${TAR_DIR}/${MPFR_TARBALL}" "${SRC_DIR}"
+	[ -f "${TAR_DIR}/${MPC_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${TAR_DIR}/${MPC_TARBALL}" "${SRC_DIR}"
+	[ -f "${TAR_DIR}/${GDB_TARBALL}" -a -d "${SRC_DIR}" ] && Extract "${TAR_DIR}/${GDB_TARBALL}" "${SRC_DIR}"
 	EchoTTY "******* Extracted :: tarballs to ${SRC_DIR}"
 	EchoTTY "******* Symlinking :: gmp, mpfr, mpc to ${GCC_SRCDIR}"
 	[ -d "${GMP_SRCDIR}" -a -d ${GCC_SRCDIR} -a ! -e ${GMP_GCCSRCDIR} ] && Symlink "${GMP_SRCDIR}" "${GMP_GCCSRCDIR}"
@@ -599,13 +614,13 @@ function create_symlinks() {
 function download_src() {
 	EchoTTY "******* Downloading :: tarballs to ${TAR_DIR}"
 	[ ! -d "${TAR_DIR}" ] && Makedir "${TAR_DIR}"
-	[ ! -f "${BINUTILS_TARBALL}" ] && Download "${BINUTILS_URI}" "${BINUTILS_TARBALL}"
-	[ ! -f "${GCC_TARBALL}" ] && Download "${GCC_URI}" "${GCC_TARBALL}"
-	[ ! -f "${NEWLIB_TARBALL}" ] && Download "${NEWLIB_URI}" "${NEWLIB_TARBALL}"
-	[ ! -f "${GMP_TARBALL}" ] && Download "${GMP_URI}" "${GMP_TARBALL}"
-	[ ! -f "${MPFR_TARBALL}" ] && Download "${MPFR_URI}" "${MPFR_TARBALL}"
-	[ ! -f "${MPC_TARBALL}" ] && Download "${MPC_URI}" "${MPC_TARBALL}"
-	[ ! -f "${GDB_TARBALL}" ] && Download "${GDB_URI}" "${GDB_TARBALL}"
+	[ ! -f "${TAR_DIR}/${BINUTILS_TARBALL}" ] && Download "${BINUTILS_URI}" "${TAR_DIR}/${BINUTILS_TARBALL}"
+	[ ! -f "${TAR_DIR}/${GCC_TARBALL}" ] && Download "${GCC_URI}" "${TAR_DIR}/${GCC_TARBALL}"
+	[ ! -f "${TAR_DIR}/${NEWLIB_TARBALL}" ] && Download "${NEWLIB_URI}" "${TAR_DIR}/${NEWLIB_TARBALL}"
+	[ ! -f "${TAR_DIR}/${GMP_TARBALL}" ] && Download "${GMP_URI}" "${TAR_DIR}/${GMP_TARBALL}"
+	[ ! -f "${TAR_DIR}/${MPFR_TARBALL}" ] && Download "${MPFR_URI}" "${TAR_DIR}/${MPFR_TARBALL}"
+	[ ! -f "${TAR_DIR}/${MPC_TARBALL}" ] && Download "${MPC_URI}" "${TAR_DIR}/${MPC_TARBALL}"
+	[ ! -f "${TAR_DIR}/${GDB_TARBALL}" ] && Download "${GDB_URI}" "${TAR_DIR}/${GDB_TARBALL}"
 	EchoTTY "******* Downloaded :: tarballs to ${TAR_DIR}"
 }
 
@@ -626,12 +641,12 @@ function export_buildvars() {
 
 # apply oopo's patches so ps3libraries will compile
 function patch_srcdirs() {
-	EchoTTY "******* Patching :: with patches from ${PATCHES_SRCDIR}"
+	EchoTTY "******* Patching :: with patches from ${PATCHES_DIR}"
 	[ -f "${BINUTILS_PATCH}" -a -d "${BINUTILS_SRCDIR}" ] && Patch "${BINUTILS_PATCH}" "${BINUTILS_SRCDIR}"
 	[ -f "${GCC_PATCH}" -a -d "${GCC_SRCDIR}" ] && Patch "${GCC_PATCH}" "${GCC_SRCDIR}"
 	[ -f "${NEWLIB_PATCH}" -a -d "${NEWLIB_SRCDIR}" ] && Patch "${NEWLIB_PATCH}" "${NEWLIB_SRCDIR}"
 	[ -f "${GDB_PATCH}" -a -d "${GDB_SRCDIR}" ] && Patch "${GDB_PATCH}" "${GDB_SRCDIR}"
-	EchoTTY "******* Patched :: with patches from ${PATCHES_SRCDIR}"
+	EchoTTY "******* Patched :: with patches from ${PATCHES_DIR}"
 }
 
 # build binutils
@@ -639,7 +654,6 @@ function build_binutils() {
 	TARGET="${1}"
 	FOLDER="${2}"
 	EchoDebug "*** Building :: binutils for ${TARGET} in ${BINUTILS_BUILDDIR}"
-	EchoFile "*** Building :: binutils for ${TARGET} in ${BINUTILS_BUILDDIR}"
 	(
 		cd "${BINUTILS_BUILDDIR}" && \
 		"${BINUTILS_SRCDIR}/configure" \
@@ -649,9 +663,9 @@ function build_binutils() {
 			--disable-nls \
 			--disable-shared \
 			--disable-werror \
-			--enable-64-bit-bfd >> "${BINUTILS_OUT}" 2>&1 && \
-		"${MAKEBIN}" "${MAKEOPTS}" >> "${BINUTILS_OUT}" 2>&1 && \
-		"${MAKEBIN}" install >> "${BINUTILS_OUT}" 2>&1
+			--enable-64-bit-bfd 1>> "${BINUTILS_OUT}" 2>&1 && \
+		"${MAKEBIN}" "${MAKEOPTS}" 1>> "${BINUTILS_OUT}" 2>&1 && \
+		"${MAKEBIN}" install 1>> "${BINUTILS_OUT}" 2>&1
 	) || die "building binutils for target ${TARGET}"
 	EchoDebug "*** Built :: binutils for ${TARGET} in ${BINUTILS_BUILDDIR}"
 	cd "${BUILDIT_DIR}"
@@ -662,31 +676,30 @@ function build_gcc_stage1_ppu() {
 	TARGET="${1}"
 	FOLDER="${2}"
 	EchoDebug "*** Building :: gcc stage 1 for ${TARGET} in ${GCC_BUILDDIR} with CPUFLAG=${CPUFLAG}"
-	EchoFile "*** Building :: gcc stage 1 for ${TARGET} in ${GCC_BUILDDIR} with CPUFLAG=${CPUFLAG}"
 	(
 		cd "${GCC_BUILDDIR}" && \
-#			--disable-checking \
-#			--disable-libmudflap \
-#			--disable-libunwind-exceptions \
-#			--enable-__cxa_atexit \
-#			--enable-secureplt \
 		"${GCC_SRCDIR}/configure" \
 			--target="${TARGET}" \
 			--prefix="${FOLDER}" \
 			--disable-bootstrap \
+			--disable-checking \
 			--disable-libgomp \
+			--disable-libmudflap \
+			--disable-libunwind-exceptions \
 			--disable-multilib \
 			--disable-nls \
 			--disable-shared \
 			--disable-threads \
+			--enable-__cxa_atexit \
 			--enable-altivec \
 			--enable-checking=release \
 			--enable-languages="c,c++" \
+			--enable-secureplt \
 			--with-cpu=cell \
 			--with-newlib \
-			"${EXTRAFLAGS}" >> "${GCC_OUT}" 2>&1 && \
-		"${MAKEBIN}" all-gcc "${MAKEOPTS}" >> "${GCC_OUT}" 2>&1 && \
-		"${MAKEBIN}" install-gcc >> "${GCC_OUT}" 2>&1
+			"${EXTRAFLAGS}" 1>> "${GCC_OUT}" 2>&1 && \
+		"${MAKEBIN}" all-gcc "${MAKEOPTS}" 1>> "${GCC_OUT}" 2>&1 && \
+		"${MAKEBIN}" install-gcc 1>> "${GCC_OUT}" 2>&1
 	) || die "building gcc for target ${TARGET}"
 	EchoDebug "*** Built :: gcc stage 1 for ${TARGET} in ${GCC_BUILDDIR} with CPUFLAG=${CPUFLAG}"
 	cd "${BUILDIT_DIR}"
@@ -697,7 +710,6 @@ function build_gcc_stage1_spu() {
 	TARGET="${1}"
 	FOLDER="${2}"
 	EchoDebug "*** Building :: gcc stage 1 for ${TARGET} in ${GCC_BUILDDIR} with CPUFLAG=${CPUFLAG}"
-	EchoFile "*** Building :: gcc stage 1 for ${TARGET} in ${GCC_BUILDDIR} with CPUFLAG=${CPUFLAG}"
 	(
 		cd "${GCC_BUILDDIR}" && \
 		"${GCC_SRCDIR}/configure" \
@@ -709,9 +721,9 @@ function build_gcc_stage1_spu() {
 			--enable-checking=release \
 			--enable-languages="c,c++" \
 			--with-newlib \
-			"${EXTRAFLAGS}" >> "${GCC_OUT}" 2>&1 && \
-		"${MAKEBIN}" all-gcc "${MAKEOPTS}" >> "${GCC_OUT}" 2>&1 && \
-		"${MAKEBIN}" install-gcc >> "${GCC_OUT}" 2>&1
+			"${EXTRAFLAGS}" 1>> "${GCC_OUT}" 2>&1 && \
+		"${MAKEBIN}" all-gcc "${MAKEOPTS}" 1>> "${GCC_OUT}" 2>&1 && \
+		"${MAKEBIN}" install-gcc 1>> "${GCC_OUT}" 2>&1
 	) || die "building gcc for target ${TARGET}"
 	EchoDebug "*** Built :: gcc stage 1 for ${TARGET} in ${GCC_BUILDDIR} with CPUFLAG=${CPUFLAG}"
 	cd "${BUILDIT_DIR}"
@@ -721,11 +733,10 @@ function build_gcc_stage1_spu() {
 function build_gcc_stage2() {
 	TARGET="${1}"
 	EchoDebug "*** Building :: gcc stage 2 for ${TARGET} in ${GCC_BUILDDIR}"
-	EchoFile "*** Building :: gcc stage 2 for ${TARGET} in ${GCC_BUILDDIR}"
 	(
 		cd "${GCC_BUILDDIR}" && \
-		"${MAKEBIN}" all "${MAKEOPTS}" >> "${GCC_OUT}" 2>&1 && \
-		"${MAKEBIN}" install >> "${GCC_OUT}" 2>&1
+		"${MAKEBIN}" all "${MAKEOPTS}" 1>> "${GCC_OUT}" 2>&1 && \
+		"${MAKEBIN}" install 1>> "${GCC_OUT}" 2>&1
 	) || die "building gcc support libs for target ${TARGET}"
 	EchoDebug "*** Built :: gcc stage 2 for ${TARGET} in ${GCC_BUILDDIR}"
 	cd "${BUILDIT_DIR}"
@@ -738,7 +749,6 @@ function build_newlib() {
 	NEWLIB_TARGET="${3}"
 	PREFIX="${FOLDER}/bin/${TARGET}"
 	EchoDebug "*** Building :: ${TARGET} newlib for ${NEWLIB_TARGET} with stage 1 gcc in ${NEWLIB_BUILDDIR}"
-	EchoFile "*** Building :: ${TARGET} newlib for ${NEWLIB_TARGET} with stage 1 gcc in ${NEWLIB_BUILDDIR}"
 	(
 		export_buildvars "${PREFIX}"
 		cd "${NEWLIB_BUILDDIR}" && \
@@ -747,9 +757,9 @@ function build_newlib() {
 			--prefix="${FOLDER}" \
 			--disable-multilib \
 			--disable-nls \
-			--disable-shared >> "${NEWLIB_OUT}" 2>&1 && \
-		"${MAKEBIN}" "${MAKEOPTS}" >> "${NEWLIB_OUT}" 2>&1 && \
-		"${MAKEBIN}" install >> "${NEWLIB_OUT}" 2>&1
+			--disable-shared 1>> "${NEWLIB_OUT}" 2>&1 && \
+		"${MAKEBIN}" "${MAKEOPTS}" 1>> "${NEWLIB_OUT}" 2>&1 && \
+		"${MAKEBIN}" install 1>> "${NEWLIB_OUT}" 2>&1
 	) || die "building newlib for target ${TARGET}"
 	(
 		if [ "${TARGET}" != "${NEWLIB_TARGET}" ]; then
@@ -775,14 +785,13 @@ function build_crt() {
 	TARGET="${1}"
 	FOLDER="${2}"
 	EchoDebug "*** Building :: crt for ${TARGET} with ${FOLDER}/bin/${TARGET}-gcc (stage 1) in ${CRT_BUILDDIR} ..."
-	EchoFile "*** Building :: crt for ${TARGET} with ${FOLDER}/bin/${TARGET}-gcc (stage 1) in ${CRT_BUILDDIR} ..."
 	(
 		cd "${CRT_BUILDDIR}" && \
-		"${FOLDER}/bin/${TARGET}-gcc" -c "${CRT_SRCDIR}/${TARGET}/crti.S" -o "${CRT_BUILDDIR}/crti.o" >> "${CRT_OUT}" 2>&1 && \
-		"${FOLDER}/bin/${TARGET}-gcc" -c "${CRT_SRCDIR}/${TARGET}/crtn.S" -o "${CRT_BUILDDIR}/crtn.o" >> "${CRT_OUT}" 2>&1 && \
-		"${FOLDER}/bin/${TARGET}-gcc" -c "${CRT_SRCDIR}/${TARGET}/crt0.S" -o "${CRT_BUILDDIR}/crt0.o" >> "${CRT_OUT}" 2>&1 && \
-		"${FOLDER}/bin/${TARGET}-gcc" -c "${CRT_SRCDIR}/${TARGET}/crt1.c" -o "${CRT_BUILDDIR}/crt.o" >> "${CRT_OUT}" 2>&1 && \
-		"${FOLDER}/bin/${TARGET}-ld" -r "${CRT_BUILDDIR}/crt0.o" "${CRT_BUILDDIR}/crt.o" -o "${CRT_BUILDDIR}/crt1.o" >> "${CRT_OUT}" 2>&1 && \
+		"${FOLDER}/bin/${TARGET}-gcc" -c "${CRT_SRCDIR}/${TARGET}/crti.S" -o "${CRT_BUILDDIR}/crti.o" 1>> "${CRT_OUT}" 2>&1 && \
+		"${FOLDER}/bin/${TARGET}-gcc" -c "${CRT_SRCDIR}/${TARGET}/crtn.S" -o "${CRT_BUILDDIR}/crtn.o" 1>> "${CRT_OUT}" 2>&1 && \
+		"${FOLDER}/bin/${TARGET}-gcc" -c "${CRT_SRCDIR}/${TARGET}/crt0.S" -o "${CRT_BUILDDIR}/crt0.o" 1>> "${CRT_OUT}" 2>&1 && \
+		"${FOLDER}/bin/${TARGET}-gcc" -c "${CRT_SRCDIR}/${TARGET}/crt1.c" -o "${CRT_BUILDDIR}/crt.o" 1>> "${CRT_OUT}" 2>&1 && \
+		"${FOLDER}/bin/${TARGET}-ld" -r "${CRT_BUILDDIR}/crt0.o" "${CRT_BUILDDIR}/crt.o" -o "${CRT_BUILDDIR}/crt1.o" 1>> "${CRT_OUT}" 2>&1 && \
 
 		EchoDebug "*** Copying :: crt lib/include to ${FOLDER}/${TARGET} ..."
 		Makedir "${FOLDER}/${TARGET}/lib" && \
@@ -803,7 +812,6 @@ function build_gdb() {
 	TARGET="${1}"
 	FOLDER="${2}"
 	EchoDebug "*** Building :: gdb for ${TARGET} in ${GDB_BUILDDIR}"
-	EchoFile "*** Building :: gdb for ${TARGET} in ${GDB_BUILDDIR}"
 	(
 		cd "${GDB_BUILDDIR}" && \
 		"${GDB_SRCDIR}/configure" \
@@ -812,9 +820,9 @@ function build_gdb() {
 			--disable-multilib \
 			--disable-nls \
 			--disable-sim \
-			--disable-werror >> "${GDB_OUT}" 2>&1 && \
-		"${MAKEBIN}" "${MAKEOPTS}" >> "${GDB_OUT}" 2>&1 && \
-		"${MAKEBIN}" install >> "${GDB_OUT}" 2>&1
+			--disable-werror 1>> "${GDB_OUT}" 2>&1 && \
+		"${MAKEBIN}" "${MAKEOPTS}" 1>> "${GDB_OUT}" 2>&1 && \
+		"${MAKEBIN}" install 1>> "${GDB_OUT}" 2>&1
 	) || die "building gdb for target ${TARGET}"
 	EchoDebug "*** Built :: gdb for ${TARGET} in ${GDB_BUILDDIR}"
 	cd "${BUILDIT_DIR}"
@@ -827,7 +835,6 @@ function prep_chain() {
 	clean_build && \
 	create_builddirs && \
 	create_srcdirs && \
-	copy_patches && \
 	copy_makerules "${1}" "${2}" && \
 	EchoTTY "******** PREP COMPLETE :: prepared for ${1} build"
 }
@@ -869,6 +876,7 @@ function build_spu() {
 # build the PPU chain and clean the build directories
 function ppu_arg() {
 	EchoTTY "******** BUILD START :: PPU toolchain building and installing, output is in ${BUILDOUTPUT}"
+	check_depends && VERIFIED="ppu" \
 	prep_chain "ppu" "${PS3CHAIN}" && \
 	patch_srcdirs && \
 	build_ppu && \
@@ -880,6 +888,7 @@ function ppu_arg() {
 # build the SPU chain and clean the build directories
 function spu_arg() {
 	EchoTTY "******** BUILD START :: SPU toolchain building and installing, output is in ${BUILDOUTPUT}"
+	check_depends && VERIFIED="spu" \
 	prep_chain "spu" "${PS3CHAIN}" && \
 	build_spu && \
 	clean_build && \
@@ -890,6 +899,7 @@ function spu_arg() {
 # build everything, then cleanup the src and build directories
 function all_arg() {
 	EchoTTY "******** BUILD START :: PPU/SPU building and installing output will be in ${BUILDOUTPUT}"
+	check_depends && VERIFIED="all" \
 	ppu_arg && \
 	spu_arg
 	EchoTTY "******** BUILD COMPLETE :: PPU/SPU built and installed, output is in ${BUILDOUTPUT}"
