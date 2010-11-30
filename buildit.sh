@@ -263,6 +263,7 @@ function EchoTTY() {
 
 # failure function
 function die() {
+	EchoFile "ERROR :: ${FUNCNAME} :: ${@}"
 	EchoTTY "ERROR :: ${FUNCNAME} :: ${@}"
 	exit 1
 }
@@ -888,7 +889,7 @@ function spu_arg() {
 
 # build everything, then cleanup the src and build directories
 function all_arg() {
-	EchoTTY "******** BUILD START :: PPU/SPU building and installing output will be in ${BUILDOUT}"
+	EchoTTY "******** BUILD START :: PPU/SPU building and installing output will be in ${BUILDOUTPUT}"
 	ppu_arg && \
 	spu_arg
 	EchoTTY "******** BUILD COMPLETE :: PPU/SPU built and installed, output is in ${BUILDOUTPUT}"
